@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import android.media.MediaPlayer;
@@ -22,11 +23,15 @@ public class MainActivity extends AppCompatActivity {
     SeekBar seekBar;
     EditText editInput;
     String contentCheck;
+    Button startStopBtn;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        startStopBtn = (Button) findViewById(R.id.button);
+
         editInput = (EditText) findViewById(R.id.edit_input);
 
         editInput.requestFocus();
@@ -70,17 +75,24 @@ public class MainActivity extends AppCompatActivity {
 
     //replace yourActivity.this with your own activity or if you declared a context you can write context.getSystemService(Context.VIBRATOR_SERVICE);
    public void buttonClick(View view){
-        final boolean contentFlag;
+        long speed = 300000;
        String content = editInput.getText().toString();
        contentCheck = editInput.getText().toString();
-       tempo = Long.parseLong(content);
+       if (!sounding) {
+           if (!contentCheck.isEmpty()) {
+               tempo = Long.parseLong(content);
+               speed = (long) ((60000 / tempo));
+           } else {
+               sounding = true;
+               MessageBox("enter a tempo in steps per minute");
+           }
+       }
+
         hideKeyboard(view);
        final View viewRef = view;
-       final long speed = (long) ((60000/tempo));
-       String message = Long.toString(speed);
-       MessageBox(message);
        final CountDownTimer countDownRef;
        sounding = !sounding;
+       startStopBtn.setText("start");
        if(sounding){
            countDownRef = new CountDownTimer(300000, speed) {
 
@@ -88,11 +100,13 @@ public class MainActivity extends AppCompatActivity {
                    if(!sounding){
                        this.cancel();
                    } else {
+                       startStopBtn.setText("stop");
                        sendMessage(viewRef);
                    }
                }
 
                public void onFinish() {
+                   startStopBtn.setText("start");
                    sounding = false;
                }
            };
